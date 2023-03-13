@@ -1,0 +1,12 @@
+{
+  "users" : [
+      {
+          "id" : "DBA3090B-B9EF-4307-8B15-EE12C938AA95",
+          "password" : "12345",
+          "firstName" : "Lindar",
+          "lastName" : "Olostur",
+          "email" : "pop-lindar@ya.ru",
+          "photoPath" : "",
+      }
+  ],
+}

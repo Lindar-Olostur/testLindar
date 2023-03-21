@@ -10,28 +10,35 @@ import Combine
 
 
 struct Page1View: View {
-    @State var items: [Latest] = []
-    @State var flash: [Flash] = []
-    @StateObject var viewModel = SearchViewModel()
+    @ObservedObject var page1viewModel = Page1ViewModel()
     @State var cancellable: AnyCancellable?
-    @State private var searchText = ""
+    @FocusState private var fieldIsFocused: Bool
     private let icons: [(String, String)] = [("iphone", "Phones"), ("headphones", "Headphones"), ("gamecontroller", "Games"), ("car", "Cars"), ("sofa", "Furniture"), ("figure.and.child.holdinghands", "Kids")]
     
     var body: some View {
         
         NavigationView {
             VStack {
+//SEARCH
                 VStack {
-                    TextField("What are you looking for?", text: $viewModel.searchText)
+                    TextField("               What are you looking for?", text: $page1viewModel.searchText)
+                        .overlay(alignment: .trailing) {
+                            Image(systemName: "magnifyingglass")
+                                .opacity(0.6)
+                        }
+                        .font(.system(size: 12))
+                        .focused($fieldIsFocused)
                         .padding(.horizontal, 20)
                         .padding(.vertical, 10)
                         .background(Color("llgray").opacity(0.7))
-                        .cornerRadius(10)
+                        .cornerRadius(25)
                         .padding(.horizontal)
                         .padding(.top, 20)
+                        .padding(.horizontal, 30)
+                    
 
-                    if viewModel.searchResults.count > 0 {
-                        List(viewModel.searchResults, id: \.self) { result in
+                    if page1viewModel.searchResults.count > 0 {
+                        List(page1viewModel.searchResults, id: \.self) { result in
                             Text(result)
                         }
                         .listStyle(.plain)
@@ -39,12 +46,12 @@ struct Page1View: View {
                         .padding(.top, 10)
                     }
                 }
-                .onChange(of: viewModel.searchText) { text in
-                    viewModel.search()
+                .onReceive(page1viewModel.$searchText) { searchText in
+                    page1viewModel.search()
                 }
                 ScrollView(showsIndicators: false) {
                     
-                    //Категории
+//CATEGORIES
                     HStack {
                         ForEach(0..<icons.count) { i in
                             Button {
@@ -67,7 +74,7 @@ struct Page1View: View {
                             .foregroundColor(.black)
                         }
                     }
-                    //LATEST ITEMS
+//LATEST ITEMS
                     VStack {
                         HStack {
                             Text("Latest")
@@ -86,7 +93,7 @@ struct Page1View: View {
                         
                         ScrollView(.horizontal, showsIndicators: false) {
                             HStack {
-                                ForEach(items, id: \.name) { item in
+                                ForEach(page1viewModel.items, id: \.name) { item in
                                     ZStack {
                                         AsyncImage(url: item.imageUrl) { image in
                                             image
@@ -134,11 +141,9 @@ struct Page1View: View {
                                     .frame(width: 120, height: 150)
                                 }
                             }
-                            //.padding(.horizontal)
                         }
-                        
                     }
-                    //FLASH SALE
+//FLASH SALE
                     VStack {
                         HStack {
                             Text("Flash Sale")
@@ -156,7 +161,7 @@ struct Page1View: View {
                         }.padding(.top)
                         ScrollView(.horizontal, showsIndicators: false) {
                             HStack {
-                                ForEach(flash, id: \.name) { item in
+                                ForEach(page1viewModel.flash, id: \.name) { item in
                                     NavigationLink {
                                         Page2View()
                                     } label: {
@@ -230,10 +235,9 @@ struct Page1View: View {
 
                                 }
                             }
-                            //.padding(.horizontal)
                         }
                     }
-                    //BRANDS
+//BRANDS
                     VStack {
                         HStack {
                             Text("Brands")
@@ -264,7 +268,7 @@ struct Page1View: View {
                 }
                 .navigationBarTitle("", displayMode: .inline)
                 .onAppear {
-                    cancellable = Publishers.Zip(fetchLatestItems(), fetchFlashSaleItems())
+                    cancellable = Publishers.Zip(page1viewModel.fetchLatestItems(), page1viewModel.fetchFlashSaleItems())
                         .sink(
                             receiveCompletion: { completion in
                                 switch completion {
@@ -274,17 +278,21 @@ struct Page1View: View {
                                     print("Finished fetching data")
                                 }
                             }, receiveValue: { latestItemsResponse, flashSaleItemsResponse in
-                                self.items = latestItemsResponse.latest
-                                self.flash = flashSaleItemsResponse.flash_sale
+                                page1viewModel.items = latestItemsResponse.latest
+                                page1viewModel.flash = flashSaleItemsResponse.flash_sale
                             }
                         )
                 }
                 .onDisappear {
                     cancellable?.cancel()
                 }
-                //.searchable(text: $searchText, prompt: "What are you looking for?").padding()
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
+                    ToolbarItemGroup(placement: .keyboard) {
+                        Button("Hide") {
+                            fieldIsFocused = false
+                        }
+                    }
                     ToolbarItem(placement: .principal) {
                                     HStack {
                                         Text("Trade by")
@@ -323,7 +331,7 @@ struct Page1View: View {
                                         .foregroundColor(.black)
                                 }
                             }
-                            .padding(.bottom)
+                            .padding(.bottom, -8)
                         }
                     }
                 }.padding()

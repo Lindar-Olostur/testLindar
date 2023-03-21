@@ -7,60 +7,45 @@
 
 import SwiftUI
 
-struct SignInView<Validator: EmailValidator>: View {
+struct SignInView: View {
     @EnvironmentObject var archive: Archive
+    @FocusState private var fieldIsFocused: Bool
     @State private var showLogInView = false
     @State private var showPage1View = false
-    @State var firstName = ""
-    @State var lastName = ""
-    @State var email = ""
-    let validator: Validator
-    @State private var showErrorAlert: Bool = false
-    @State private var errorTitle = ""
-    @State private var errorMessage = ""
+    @ObservedObject var viewModel: SignInViewModel<BasicEmailValidator>
+
+        init() {
+            self.viewModel = SignInViewModel(validator: BasicEmailValidator(), archive: Archive())
+        }
+
+
     
     var body: some View {
+//SIGN IN
         VStack {
             Text("Sign In")
                 .font(.custom("Montserrat-SemiBold", size: 30))
                 .padding(.bottom, 50)
-            TextField("First Name", text: $firstName)
+            TextField("First Name", text: $viewModel.firstName)
                 .textFieldStyle(GrayTextField())
-            TextField("Last Name", text: $lastName)
+                .focused($fieldIsFocused)
+            TextField("Last Name", text: $viewModel.lastName)
                 .textFieldStyle(GrayTextField())
-            EmailTextField(email: $email)
+                .focused($fieldIsFocused)
+            EmailTextField(email: $viewModel.email)
             
             Button {
-                
-                guard fieldIsEmpty(first: firstName, last: lastName, email: email) == false else {
-                    errorTitle = "Empty fields"
-                    errorMessage = "Please fill out all fields"
-                    showErrorAlert = true
-                    return
+                viewModel.archive.myList.users = archive.myList.users
+                if viewModel.signIn() {
+                    archive.myList.users.append(User(firstName: viewModel.firstName, lastName: viewModel.lastName, email: viewModel.email))
+                    archive.writeToFile()
+                    showPage1View = true
                 }
-                
-                guard validator.isValidEmail(email) else {
-                    errorTitle = "Invalid email"
-                    errorMessage = "Please enter a valid email"
-                    showErrorAlert = true
-                    return
-                }
-                
-                guard archive.myList.signIn(first: firstName, last: lastName, email: email) == false else {
-                    errorTitle = "Match user"
-                    errorMessage = "Please login"
-                    showErrorAlert = true
-                    return
-                }
-                
-                let newUser = User(firstName: firstName, lastName: lastName, email: email)
-                archive.myList.users.append(newUser)
-                archive.writeToFile()
-                showPage1View = true
             } label: {
                 Text("Sign In")
             }
             .buttonStyle(BigBlueButton())
+//LOG IN
             HStack {
                 Text("Already have an account?")
                     .font(.custom("Montserrat-SemiBold", size: 13))
@@ -76,7 +61,7 @@ struct SignInView<Validator: EmailValidator>: View {
             }
             .padding(.horizontal)
             .padding(.bottom, 40)
-            
+//SIGN IN WITH
             VStack(alignment: .listRowSeparatorLeading) {
                 Button {
                     //
@@ -106,10 +91,16 @@ struct SignInView<Validator: EmailValidator>: View {
             }
             
         }
+        .toolbar {
+            ToolbarItemGroup(placement: .keyboard) {
+                Button("Hide") {
+                    fieldIsFocused = false
+                }
+            }
+        }
         .onAppear {
-            archive.getFile()
-           // archive.myList = archive.autoload()
-            print(archive.myList)
+           archive.getFile()
+           //archive.myList = archive.autoload()
         }
         .sheet(isPresented: $showLogInView) {
             LogInView()
@@ -118,28 +109,33 @@ struct SignInView<Validator: EmailValidator>: View {
             MainTabView()
         }
         .padding()
-        .alert(errorTitle, isPresented: $showErrorAlert) {
+        .alert(viewModel.errorTitle, isPresented: $viewModel.showErrorAlert) {
             
         } message: {
-            Text(errorMessage)
+            Text(viewModel.errorMessage)
         }
     }
 
-    func fieldIsEmpty(first: String, last: String, email: String) -> Bool {
-        var result = true
-
-        if first == "" || last == "" || email == "" {
-            result = true
-            return result
-        } else {
-            result = false
-            return result
-        }
-    }
+    
 }
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
-        SignInView(validator: BasicEmailValidator()).environmentObject(Archive())
+        SignInView()//(validator: BasicEmailValidator())
+            .environmentObject(Archive())
+            .environmentObject(Page1ViewModel())
+    }
+}
+
+struct EmailTextField: View {
+    @Binding var email: String
+    
+    
+    var body: some View {
+        TextField("Email", text: $email)
+            .textFieldStyle(GrayTextField())
+            .autocapitalization(.none)
+            .keyboardType(.emailAddress)
+            .textContentType(.emailAddress)
     }
 }

@@ -2,46 +2,79 @@
 //  SignInVM.swift
 //  testLindar
 //
-//  Created by Lindar Olostur on 20.03.2023.
+//  Created by Lindar Olostur on 21.03.2023.
 //
 
 import Foundation
+import SwiftUI
 
-protocol SignInViewModelProtocol: ObservableObject {
-    var firstName: String { get set }
-    var lastName: String { get set }
-    var email: String { get set }
-    var showErrorAlert: Bool { get set }
-    var errorTitle: String { get set }
-    var errorMessage: String { get set }
-    var showLogInView: Bool { get set }
-    var showPage1View: Bool { get set }
-    func signIn()
-    func showLogInView()
+protocol EmailValidator {
+    func isValidEmail(_ email: String) -> Bool
 }
 
-class SignInViewModel: SignInViewModelProtocol {
-    @EnvironmentObject var archive: Archive
-
+class SignInViewModel<Validator: EmailValidator>: ObservableObject {
+    var archive: Archive
     @Published var firstName = ""
     @Published var lastName = ""
     @Published var email = ""
-    @Published var showErrorAlert = false
+    @Published var showErrorAlert: Bool = false
     @Published var errorTitle = ""
     @Published var errorMessage = ""
-    @Published var showLogInView = false
-    @Published var showPage1View = false
-
-    private let validator: EmailValidator
-
-    init(validator: EmailValidator) {
+    let validator: Validator
+    
+    init(firstName: String = "", lastName: String = "", email: String = "", validator: Validator, archive: Archive) {
+        self.firstName = firstName
+        self.lastName = lastName
+        self.email = email
         self.validator = validator
+        self.archive = archive
     }
+    
+    @MainActor func signIn() -> Bool {
 
-    func signIn() {
-        guard fieldIsEmpty(firstName: firstName, lastName, email) == false else {
+        guard fieldIsEmpty(first: firstName, last: lastName, email: email) == false else {
+            errorTitle = "Empty fields"
+            errorMessage = "Please fill out all fields"
             showErrorAlert = true
-            errorTitle = "Error"
-            errorMessage = "Please fill in all fields."
-            return
-            }
+            return false
+        }
+        
+        guard validator.isValidEmail(email) else {
+            errorTitle = "Invalid email"
+            errorMessage = "Please enter a valid email"
+            showErrorAlert = true
+            return false
+        }
+        
+        guard archive.myList.signIn(first: firstName, last: lastName, email: email) == false else {
+            errorTitle = "Match user"
+            errorMessage = "Please login"
+            showErrorAlert = true
+            return false
+        }
+        
+        return true
+    }
+    
+    func fieldIsEmpty(first: String, last: String, email: String) -> Bool {
+        var result = true
+
+        if first == "" || last == "" || email == "" {
+            result = true
+            return result
+        } else {
+            result = false
+            return result
+        }
+    }
+    
+}
+
+struct BasicEmailValidator: EmailValidator {
+    func isValidEmail(_ email: String) -> Bool {
+        let emailRegex = "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}"
+        let emailPredicate = NSPredicate(format: "SELF MATCHES %@", emailRegex)
+        return emailPredicate.evaluate(with: email)
+    }
+}
+

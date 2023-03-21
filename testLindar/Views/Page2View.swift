@@ -9,20 +9,18 @@ import SwiftUI
 
 struct Page2View: View {
     @ObservedObject var viewModel = ProductViewModel()
-    @State private var selectedImageUrl: String = ""
-    @State private var selectedColor: Color = .white
-    @State private var itemsCount = 0
     
     var body: some View {
-        
+
         GeometryReader { geometry in
             ScrollView(.vertical) {
                 if let product = viewModel.product {
                     VStack(alignment: .leading) {
                         HStack {
                             ZStack {
+//BIG PICTURE
                                 HStack {
-                                    if let url = URL(string: selectedImageUrl) ?? URL(string: product.imageUrls.first ?? "") {
+                                    if let url = URL(string: viewModel.selectedImageUrl) ?? URL(string: product.imageUrls.first ?? "") {
                                         AsyncImage(url: url) { phase in
                                             switch phase {
                                             case .empty:
@@ -41,6 +39,7 @@ struct Page2View: View {
                                             }
                                         }
                                         .cornerRadius(18, corners: [.topRight, .bottomRight])
+//SIDE BUTTONS
                                         VStack {
                                             Image(systemName: "heart")
                                             Text("-")
@@ -80,11 +79,10 @@ struct Page2View: View {
                                         }
                                     }
                                 }
-                                
                             }
                             .padding(.top)
                         }
-                        
+//PICTURE PICKER
                         ScrollView(.horizontal, showsIndicators: false) {
                             HStack(spacing: 15) {
                                 ForEach(product.imageUrls, id: \.self) { imageUrl in
@@ -111,11 +109,11 @@ struct Page2View: View {
                                     .clipped()
                                     .cornerRadius(10.0)
                                     .onTapGesture {
-                                        selectedImageUrl = imageUrl
+                                        viewModel.selectedImageUrl = imageUrl
                                     }
-                                    .scaleEffect(selectedImageUrl == imageUrl ? 1.2 : 1.0)
-                                    .shadow(radius: selectedImageUrl == imageUrl ? 6 : 0, y: selectedImageUrl == imageUrl ? 6 : 0)
-                                    .padding(.horizontal, selectedImageUrl == imageUrl ? 8 : 0)
+                                    .scaleEffect(viewModel.selectedImageUrl == imageUrl ? 1.2 : 1.0)
+                                    .shadow(radius: viewModel.selectedImageUrl == imageUrl ? 6 : 0, y: viewModel.selectedImageUrl == imageUrl ? 6 : 0)
+                                    .padding(.horizontal, viewModel.selectedImageUrl == imageUrl ? 8 : 0)
                                     .animation(.easeInOut)
                                 }
                             }
@@ -123,6 +121,7 @@ struct Page2View: View {
                             .padding()
                         }
                     }
+//INFO BLOCK
                     HStack(alignment: .top) {
                         VStack(alignment: .leading, spacing: 10) {
                             Text(product.name)
@@ -151,7 +150,7 @@ struct Page2View: View {
                                 .font(.custom("Montserrat-Bold", size: 14))
                         }
                     }.padding()
-                    
+//COLOR PICKER
                     HStack {
                         VStack(alignment: .leading) {
                             Text("Color:")
@@ -159,14 +158,14 @@ struct Page2View: View {
                                 .foregroundColor(.gray)
                             HStack(spacing: 20) {
                                 Button(action: {
-                                    self.selectedColor = .white
+                                    viewModel.selectedColor = .white
                                 }) {
                                     Rectangle()
                                         .fill(Color.white)
                                             .frame(width: 50, height: 35)
                                             .cornerRadius(14)
                                             .overlay(
-                                                selectedColor == .white ? RoundedRectangle(cornerRadius: 10).stroke(Color.gray, lineWidth: 3) : nil
+                                                viewModel.selectedColor == .white ? RoundedRectangle(cornerRadius: 10).stroke(Color.gray, lineWidth: 3) : nil
                                             )
                                             .overlay(
                                                 RoundedRectangle(cornerRadius: 14)
@@ -174,14 +173,14 @@ struct Page2View: View {
                                             )
                                 }
                                 Button(action: {
-                                    self.selectedColor = .gray
+                                    viewModel.selectedColor = .gray
                                 }) {
                                     Rectangle()
                                         .fill(Color.gray)
                                         .frame(width: 50, height: 35)
                                         .cornerRadius(14)
                                         .overlay(
-                                            selectedColor == .gray ? RoundedRectangle(cornerRadius: 14).stroke(Color.gray, lineWidth: 3) : nil
+                                            viewModel.selectedColor == .gray ? RoundedRectangle(cornerRadius: 14).stroke(Color.gray, lineWidth: 3) : nil
                                         )
                                         .overlay(
                                             RoundedRectangle(cornerRadius: 14)
@@ -189,14 +188,14 @@ struct Page2View: View {
                                         )
                                 }
                                 Button(action: {
-                                    self.selectedColor = .black
+                                    viewModel.selectedColor = .black
                                 }) {
                                     Rectangle()
                                         .fill(Color.black)
                                         .frame(width: 50, height: 35)
                                         .cornerRadius(14)
                                         .overlay(
-                                            selectedColor == .black ? RoundedRectangle(cornerRadius: 14).stroke(Color.gray, lineWidth: 3) : nil
+                                            viewModel.selectedColor == .black ? RoundedRectangle(cornerRadius: 14).stroke(Color.gray, lineWidth: 3) : nil
                                         )
                                         .overlay(
                                             RoundedRectangle(cornerRadius: 14)
@@ -207,6 +206,7 @@ struct Page2View: View {
                         }.padding()
                         Spacer()
                     }
+//CART
                     ZStack {
                         Rectangle()
                             .fill(Color("cartColor"))
@@ -222,27 +222,28 @@ struct Page2View: View {
                                         .padding(.horizontal)
                                     HStack {
                                         Button {
-                                            itemsCount -= 1
+                                            viewModel.itemsCount -= 1
                                         } label: {
-                                            Image(systemName: "minus")
+                                            Image(systemName: "minus").font(.system(size: 10))
                                         }
-                                        .frame(width: 90, height: 40)
+                                        .frame(width: 80, height: 30)
                                         .buttonStyle(BigBlueButton())
                                         Button {
-                                            itemsCount += 1
+                                            viewModel.itemsCount += 1
                                         } label: {
-                                            Image(systemName: "plus")
+                                            Image(systemName: "plus").font(.system(size: 10))
                                                 .padding(-6)
                                         }
-                                        .frame(width: 90, height: 40)
+                                        .frame(width: 80, height: 30)
                                         .buttonStyle(BigBlueButton())
+                                        .padding(.leading, -20)
                                     }
                                 }
                                 Button {
                                     //
                                 } label: {
                                     HStack {
-                                        Text("#" + String(format: "%.2f", Double(itemsCount) * 22.50))
+                                        Text("#" + String(format: "%.2f", Double(viewModel.itemsCount) * 22.50))
                                             .font(.custom("Montserrat-Regular", size: 10))
                                             .foregroundColor(.gray)
                                         Text("ADD TO CART")
@@ -250,6 +251,7 @@ struct Page2View: View {
                                             .padding(.horizontal)
                                     }
                                 }
+                                .padding(.bottom, -16)
                                 .frame(width: .infinity)
                                 .buttonStyle(BigBlueButton())
                                 
@@ -261,7 +263,6 @@ struct Page2View: View {
                     ProgressView()
                         .progressViewStyle(CircularProgressViewStyle())
                 }
-                
             }
         }
         .onAppear {

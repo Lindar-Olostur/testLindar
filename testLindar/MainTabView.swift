@@ -8,33 +8,64 @@
 import SwiftUI
 
 struct MainTabView: View {
-    @State private var screen = 0
+    @StateObject private var coordinator = MainTabViewCoordinator()
     
     var body: some View {
-        TabView(selection: $screen) {
-            Page1View()
-                .tabItem() {
-                    Image(systemName: "house")
-                }.tag(0)
-            Page1View()
-                .tabItem {
-                    Image(systemName: "heart")
-                }.tag(1)
-            Page1View()
-                .tabItem {
-                    Image(systemName: "cart")
-                }.tag(2)
-            Page1View()
-                .tabItem {
-                    Image(systemName: "bubble.left")
-                }.tag(3)
-            ProfileView()
-                .tabItem {
-                    Image(systemName: "person")
-                }.tag(4)
+        ZStack {
+            coordinator.view(for: coordinator.currentScreen)
+            
+            VStack(spacing: 0) {
+                Spacer()
+                HStack {
+                    TabBarButton(image: "house", isSelected: coordinator.currentScreen == .home) {
+                        coordinator.currentScreen = .home
+                    }
+                    TabBarButton(image: "heart", isSelected: coordinator.currentScreen == .favorites) {
+                        coordinator.currentScreen = .favorites
+                    }
+                    TabBarButton(image: "cart", isSelected: coordinator.currentScreen == .cart) {
+                        coordinator.currentScreen = .cart
+                    }
+                    TabBarButton(image: "bubble.left", isSelected: coordinator.currentScreen == .messages) {
+                        coordinator.currentScreen = .messages
+                    }
+                    TabBarButton(image: "person", isSelected: coordinator.currentScreen == .profile) {
+                        coordinator.currentScreen = .profile
+                    }
+                }
+                .padding(.horizontal)
+                .padding(.vertical, 8)
+                .background(Color.white)
+                .clipShape(RoundedRectangle(cornerRadius: 30, style: .circular))
+            }
+            .ignoresSafeArea()
         }
     }
 }
+
+
+struct TabBarButton: View {
+    let image: String
+    let isSelected: Bool
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            ZStack {
+                Circle()
+                    .fill(isSelected ? Color.gray.opacity(0.15) : Color.clear)
+                    .scaleEffect(0.8)
+                Image(systemName: image)
+                    .font(.system(size: 20, weight: isSelected ? .medium : .regular))
+                    .foregroundColor(.gray)
+            }.padding(.bottom)
+        }
+    }
+}
+
+
+
+
 
 struct MainTabView_Previews: PreviewProvider {
     static var previews: some View {

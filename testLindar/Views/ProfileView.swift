@@ -20,6 +20,7 @@ struct ProfileView: View {
     var body: some View {
         NavigationView {
             VStack() {
+//IMAGE PICKER
                 if let selectedImageData,
                    let uiImage = UIImage(data: selectedImageData) {
                     Image(uiImage: uiImage)
@@ -28,7 +29,6 @@ struct ProfileView: View {
                         .frame(width: 80, height: 80)
                         .clipShape(Circle())
                 } else {
-                    // вообще надо брать дату из базы
                     Image("photo")
                         .resizable()
                         .aspectRatio(contentMode: .fill)
@@ -45,7 +45,6 @@ struct ProfileView: View {
                     }
                     .onChange(of: selectedItem) { newItem in
                         Task {
-                            // Retrive selected asset in the form of Data
                             if let data = try? await newItem?.loadTransferable(type: Data.self) {
                                 selectedImageData = data
                             }
@@ -66,7 +65,7 @@ struct ProfileView: View {
                             .padding(.trailing, 40)
                     }
                 }.buttonStyle(BigBlueButton())
-                
+//MENU
                 List() {
                     HStack {
                         ZStack {
@@ -172,9 +171,10 @@ struct ProfileView: View {
                     .onTapGesture {
                         showSignInView = true
                     }
+                    
+                    .padding(.bottom, 80)
                 }
                 .listStyle(.plain)
-                
                 Spacer()
 
             }
@@ -191,7 +191,7 @@ struct ProfileView: View {
             }
         }
         .fullScreenCover(isPresented: $showSignInView) {
-            SignInView(validator: BasicEmailValidator())
+            SignInView()
         }
     }
 }

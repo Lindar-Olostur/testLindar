@@ -13,7 +13,7 @@ struct testLindarApp: App {
     @StateObject var archive: Archive = Archive()
     var body: some Scene {
         WindowGroup {
-            SignInView(validator: BasicEmailValidator())
+            SignInView()
                 .environmentObject(archive)
                 
         }

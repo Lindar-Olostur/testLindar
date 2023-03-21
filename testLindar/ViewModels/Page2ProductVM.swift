@@ -1,34 +1,18 @@
 //
-//  Page2ItemModel.swift
+//  ProductVM.swift
 //  testLindar
 //
-//  Created by Lindar Olostur on 17.03.2023.
+//  Created by Lindar Olostur on 21.03.2023.
 //
 
 import Foundation
 import SwiftUI
-import Combine
 
-
-//MODEL
-struct Product: Codable {
-    let name: String
-    let description: String
-    let rating: Double
-    let numberOfReviews: Int
-    let price: Double
-    let colors: [String]
-    let imageUrls: [String]
-
-    private enum CodingKeys: String, CodingKey {
-        case name, description, rating, numberOfReviews = "number_of_reviews", price, colors, imageUrls = "image_urls"
-    }
-}
-
-
-//VIEW MODEL
 class ProductViewModel: ObservableObject {
     @Published var product: Product?
+    @Published var selectedImageUrl: String = ""
+    @Published var selectedColor: Color = .white
+    @Published var itemsCount = 0
 
     func fetchProduct() {
         guard let url = URL(string: "https://run.mocky.io/v3/f7f99d04-4971-45d5-92e0-70333383c239") else {
@@ -46,5 +30,4 @@ class ProductViewModel: ObservableObject {
         }.resume()
     }
 }
-
 

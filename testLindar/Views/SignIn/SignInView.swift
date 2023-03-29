@@ -46,7 +46,7 @@ struct SignInView: View {
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
-        SignInView()//(validator: BasicEmailValidator())
+        SignInView()
             .environmentObject(Archive())
             .environmentObject(Page1ViewModel())
     }

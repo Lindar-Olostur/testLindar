@@ -43,30 +43,6 @@ struct MainTabView: View {
     }
 }
 
-
-struct TabBarButton: View {
-    let image: String
-    let isSelected: Bool
-    let action: () -> Void
-    
-    var body: some View {
-        Button(action: action) {
-            ZStack {
-                Circle()
-                    .fill(isSelected ? Color.gray.opacity(0.15) : Color.clear)
-                    .scaleEffect(0.8)
-                Image(systemName: image)
-                    .font(.system(size: 20, weight: isSelected ? .medium : .regular))
-                    .foregroundColor(.gray)
-            }.padding(.bottom)
-        }
-    }
-}
-
-
-
-
-
 struct MainTabView_Previews: PreviewProvider {
     static var previews: some View {
         MainTabView()

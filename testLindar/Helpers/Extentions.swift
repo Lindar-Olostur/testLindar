@@ -7,13 +7,6 @@
 
 import SwiftUI
 
-struct MontserratSemiBoldModifier: ViewModifier {
-    func body(content: Content) -> some View {
-        content
-            .font(Font.custom("Montserrat-SemiBold", size: 16))
-    }
-}
-
 struct GrayTextField: TextFieldStyle {
     func _body(configuration: TextField<Self._Label>) -> some View {
         configuration

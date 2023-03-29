@@ -46,7 +46,7 @@ class SignInViewModel<Validator: EmailValidator>: ObservableObject {
             return false
         }
         
-        guard archive.myList.signIn(first: firstName, last: lastName, email: email) == false else {
+        guard archive.myList.checkMatchAccount(first: firstName, last: lastName, email: email) == false else {
             errorTitle = "Match user"
             errorMessage = "Please login"
             showErrorAlert = true
@@ -57,17 +57,9 @@ class SignInViewModel<Validator: EmailValidator>: ObservableObject {
     }
     
     func fieldIsEmpty(first: String, last: String, email: String) -> Bool {
-        var result = true
-
-        if first == "" || last == "" || email == "" {
-            result = true
-            return result
-        } else {
-            result = false
-            return result
-        }
+        return first.isEmpty || last.isEmpty || email.isEmpty
     }
-    
+
 }
 
 struct BasicEmailValidator: EmailValidator {

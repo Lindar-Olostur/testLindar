@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftUI
+import Combine
 
 class ProductViewModel: ObservableObject {
     @Published var product: Product?
@@ -14,20 +15,45 @@ class ProductViewModel: ObservableObject {
     @Published var selectedColor: Color = .white
     @Published var itemsCount = 0
 
+    private var cancellable: AnyCancellable?
+
     func fetchProduct() {
         guard let url = URL(string: "https://run.mocky.io/v3/f7f99d04-4971-45d5-92e0-70333383c239") else {
             return
         }
 
-        URLSession.shared.dataTask(with: url) { data, response, error in
-            if let data = data {
-                if let decodedProduct = try? JSONDecoder().decode(Product.self, from: data) {
-                    DispatchQueue.main.async {
-                        self.product = decodedProduct
-                    }
+        cancellable = APIClient.fetchData(from: url)
+            .sink(receiveCompletion: { completion in
+                switch completion {
+                case .finished:
+                    break
+                case .failure(let error):
+                    print("Error: \(error.localizedDescription)")
                 }
-            }
-        }.resume()
+            }, receiveValue: { [weak self] product in
+                self?.product = product
+            })
+    }
+    
+    func image(withURL url: URL) -> some View {
+    AsyncImage(url: url) { phase in
+        switch phase {
+        case .empty:
+            ProgressView()
+        case .success(let image):
+            image
+                .resizable()
+                .frame(width: .infinity, height: nil)
+                .aspectRatio(contentMode: .fit)
+        case .failure:
+            Image(systemName: "photo")
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+        @unknown default:
+            fatalError()
+        }
     }
 }
+}
+
 

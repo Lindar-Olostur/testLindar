@@ -28,26 +28,6 @@ import SwiftUI
         myList = readArchive()
     }
     
-    func autoload<T: Decodable>() -> T {
-        let data: Data
-        let documentDirectoryPath:String = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first!
-        let fileUrl = URL(fileURLWithPath: documentDirectoryPath)
-        let file = fileUrl.absoluteURL.appendingPathComponent("Users.json")
-        
-        do {
-            data = try Data(contentsOf: file)
-        } catch {
-            fatalError("Couldn't load Users.json from main bundle:\n\(error)")
-        }
-
-        do {
-            let decoder = JSONDecoder()
-            return try decoder.decode(T.self, from: data)
-        } catch {
-            fatalError("Couldn't parse Users.json as \(T.self):\n\(error)")
-        }
-    }
-    
     func readArchive<T: Decodable>() -> T {
         let data: Data
 
